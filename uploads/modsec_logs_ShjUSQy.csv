@@ -1,0 +1,39 @@
+timestamp,transaction_id,client_ip,http_status,request_method,request_uri,user_agent,rule_id,rule_message,matched_data,severity,attack_type,action,anomaly_score,phase
+"2024-01-15 10:30:23","abc123def","192.168.1.100",403,"GET","/rest/products/search?q=1' OR '1'='1","Mozilla/5.0","1001","SQL Injection Detection - Test Rule","' OR '1'='1","high","SQL Injection","blocked",10,2
+"2024-01-15 10:30:24","nor001abc","192.168.1.100",200,"GET","/","Mozilla/5.0","-","-","-","-","-","allowed",0,-
+"2024-01-15 10:31:22","nor002def","192.168.1.101",200,"GET","/rest/products/search?q=apple","Mozilla/5.0","-","-","-","-","-","allowed",0,-
+"2024-01-15 10:31:45","def456ghi","192.168.1.101",403,"GET","/search?q=<script>alert('xss')</script>","Mozilla/5.0","1002","XSS Detection - Test Rule","<script","high","XSS","blocked",10,2
+"2024-01-15 10:32:12","ghi789jkl","192.168.1.102",403,"GET","/../../../etc/passwd","curl/7.68.0","1003","Path Traversal Detection - Test Rule","../","high","Path Traversal","blocked",10,2
+"2024-01-15 10:32:45","nor003ghi","192.168.1.102",200,"POST","/api/Users/login","Mozilla/5.0","-","-","-","-","-","allowed",0,-
+"2024-01-15 10:33:18","nor004jkl","192.168.1.103",200,"GET","/assets/public/images","Mozilla/5.0","-","-","-","-","-","allowed",0,-
+"2024-01-15 10:33:27","jkl012mno","192.168.1.103",403,"GET","/search?q=;cat /etc/passwd","Mozilla/5.0","1004","Command Injection Detection - Test Rule",";","high","Command Injection","blocked",10,2
+"2024-01-15 10:34:27","nor005mno","192.168.1.104",200,"GET","/rest/user/whoami","PostmanRuntime/7.26.8","-","-","-","-","-","allowed",0,-
+"2024-01-15 10:34:56","mno345pqr","192.168.1.104",403,"POST","/api/Users/","PostmanRuntime/7.26.8","1005","LDAP Injection Detection - Test Rule","*","medium","LDAP Injection","blocked",7,2
+"2024-01-15 10:35:34","pqr678stu","192.168.1.105",403,"GET","/search?q=<!--#exec cmd=\"ls\"-->","Mozilla/5.0","1006","SSI Injection Detection - Test Rule","<!--#","medium","SSI Injection","blocked",7,2
+"2024-01-15 10:35:56","nor006pqr","192.168.1.105",200,"GET","/#/search","Mozilla/5.0","-","-","-","-","-","allowed",0,-
+"2024-01-15 10:36:34","nor007stu","192.168.1.106",201,"POST","/api/Feedbacks","Mozilla/5.0","-","-","-","-","-","allowed",0,-
+"2024-01-15 10:36:45","stu901vwx","192.168.1.106",403,"POST","/api/Products","Mozilla/5.0","1007","XML Injection Detection - Test Rule","<!DOCTYPE","high","XML Injection","blocked",10,2
+"2024-01-15 10:37:23","vwx234yza","192.168.1.107",403,"GET","/","HTTP/0.9","1008","Protocol Anomaly Detection - Test Rule","http/0.9","medium","Protocol Anomaly","blocked",7,1
+"2024-01-15 10:37:45","nor008vwx","192.168.1.107",200,"GET","/rest/products/1","curl/7.68.0","-","-","-","-","-","allowed",0,-
+"2024-01-15 10:38:12","yza567bcd","192.168.1.108",200,"GET","/","nmap scripting engine","1009","Scanner Detection - Test Rule","nmap","low","Scanner","allowed",2,1
+"2024-01-15 10:39:45","bcd890efg","192.168.1.109",403,"POST","/file-upload","Mozilla/5.0","1010","File Upload Detection - Test Rule",".php","medium","File Upload","blocked",7,2
+"2024-01-15 10:40:33","efg123hij","192.168.1.110",200,"POST","/api/Users","Mozilla/5.0","1011","Data Leakage Detection - Test Rule","password","medium","Data Leakage","allowed",3,3
+"2024-01-15 10:41:22","hij456klm","192.168.1.111",200,"GET","/?jsessionid=12345","Mozilla/5.0","1012","Session Fixation Detection - Test Rule","jsessionid","medium","Session Fixation","allowed",3,1
+"2024-01-15 10:42:15","klm789nop","192.168.1.112",403,"GET","/search?q=1' UNION SELECT 1,2,3--","Mozilla/5.0","1014","SQLi Union Detection - Test Rule","union select","critical","SQL Injection","blocked",15,2
+"2024-01-15 10:43:27","nop012qrs","192.168.1.113",403,"GET","/search?q=<img src=x onerror=alert(1)>","Mozilla/5.0","1015","XSS Event Handler Detection - Test Rule","onerror","high","XSS","blocked",10,2
+"2024-01-15 10:44:38","qrs345tuv","192.168.1.114",403,"GET","/search?q=<?php system('id'); ?>","Mozilla/5.0","1016","OS Commanding Detection - Test Rule","system(","critical","Command Injection","blocked",15,2
+"2024-01-15 10:45:52","tuv678wxy","192.168.1.115",403,"GET","/","Mozilla/5.0","1017","Header Injection Detection - Test Rule","%0a","medium","Header Injection","blocked",7,1
+"2024-01-15 10:46:34","wxy901zab","192.168.1.116",403,"GET","/..\\windows\\win.ini","curl/7.68.0","1019","Path Traversal Windows Detection - Test Rule","..\\","high","Path Traversal","blocked",10,2
+"2024-01-15 10:47:18","zab234cde","192.168.1.117",200,"POST","/api/BasketItems","Mozilla/5.0","1020","JSON Injection Detection - Test Rule","\" : {","medium","JSON Injection","allowed",3,2
+"2024-01-15 10:48:29","cde567fgh","192.168.1.118",403,"GET","/search?q=admin' --","Mozilla/5.0","1001","SQL Injection Detection - Test Rule","' --","high","SQL Injection","blocked",10,2
+"2024-01-15 10:49:37","fgh890ijk","192.168.1.119",403,"GET","/search?q=javascript:alert(document.cookie)","Mozilla/5.0","1002","XSS Detection - Test Rule","javascript:","high","XSS","blocked",10,2
+"2024-01-15 11:30:23","xyz123abc","192.168.1.120",403,"GET","/search?q=O'Reilly","Mozilla/5.0","1001","SQL Injection Detection - Test Rule","O'","high","SQL Injection","blocked",10,2
+"2024-01-15 11:31:45","abc456def","192.168.1.121",403,"GET","/documentation/javascript","Mozilla/5.0","1002","XSS Detection - Test Rule","javascript","high","XSS","blocked",10,2
+"2024-01-15 11:32:12","def789ghi","192.168.1.122",403,"GET","/search?q=AT&T","Mozilla/5.0","1004","Command Injection Detection - Test Rule","&","high","Command Injection","blocked",10,2
+"2024-01-15 11:33:27","ghi012jkl","192.168.1.123",403,"POST","/api/Products","Mozilla/5.0","1005","LDAP Injection Detection - Test Rule","*","medium","LDAP Injection","blocked",7,2
+"2024-01-15 11:34:56","jkl345mno","192.168.1.124",200,"POST","/register","Mozilla/5.0","1011","Data Leakage Detection - Test Rule","password","medium","Data Leakage","allowed",3,3
+"2024-01-15 11:35:34","mno678pqr","192.168.1.125",403,"GET","/analytics/onclick","Mozilla/5.0","1015","XSS Event Handler Detection - Test Rule","onclick","high","XSS","blocked",10,2
+"2024-01-15 11:36:45","pqr901stu","192.168.1.126",403,"GET","/api/Products?sort=desc","Mozilla/5.0","1001","SQL Injection Detection - Test Rule","desc","high","SQL Injection","blocked",10,2
+"2024-01-15 11:37:23","stu234vwx","192.168.1.127",403,"POST","/api/Comments","Mozilla/5.0","1002","XSS Detection - Test Rule","<3","high","XSS","blocked",10,2
+"2024-01-15 11:38:15","nor009abc","192.168.1.128",200,"GET","/main.js","Mozilla/5.0","-","-","-","-","-","allowed",0,-
+"2024-01-15 11:39:22","nor010def","192.168.1.129",200,"GET","/styles.css","Mozilla/5.0","-","-","-","-","-","allowed",0,-

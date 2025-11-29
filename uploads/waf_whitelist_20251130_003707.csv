@@ -1,0 +1,13 @@
+rule_id,suggestion_type,pattern_description,pattern_regex,pattern_conditions,estimated_reduction,security_risk,priority,status,created_at
+1001,path_whitelist,Allow path: /api/Products (1x blocked),,{'path': '/api/Products'},11.11%,medium,medium,suggested,2025-11-29 19:35:39
+1002,path_whitelist,Allow path: /documentation/javascript (1x blocked),,{'path': '/documentation/javascript'},25.00%,medium,high,suggested,2025-11-29 19:35:39
+1002,path_whitelist,Allow path: /api/Comments (1x blocked),,{'path': '/api/Comments'},25.00%,medium,high,suggested,2025-11-29 19:35:39
+1015,path_whitelist,Allow path: /analytics/onclick (1x blocked),,{'path': '/analytics/onclick'},50.00%,medium,high,suggested,2025-11-29 19:35:39
+1004,path_whitelist,Allow path: /search (1x blocked),,{'path': '/search'},50.00%,medium,high,suggested,2025-11-29 19:35:39
+1005,path_whitelist,Allow path: /api/Users/ (1x blocked),,{'path': '/api/Users/'},50.00%,medium,high,suggested,2025-11-29 19:35:39
+1005,path_whitelist,Allow path: /api/Products (1x blocked),,{'path': '/api/Products'},50.00%,medium,high,suggested,2025-11-29 19:35:39
+1006,path_whitelist,Allow path: /search (1x blocked),,{'path': '/search'},100.00%,medium,high,suggested,2025-11-29 19:35:39
+1010,path_whitelist,Allow path: /file-upload (1x blocked),,{'path': '/file-upload'},100.00%,medium,high,suggested,2025-11-29 19:35:39
+1017,path_whitelist,Allow path: / (1x blocked),,{'path': '/'},100.00%,medium,high,suggested,2025-11-29 19:35:39
+1002,path_whitelist,Allow path: /documentation/javascript (1x blocked),,{'path': '/documentation/javascript'},25.00%,medium,high,suggested,2025-11-29 19:35:39
+1002,path_whitelist,Allow path: /api/Comments (1x blocked),,{'path': '/api/Comments'},25.00%,medium,high,suggested,2025-11-29 19:35:39

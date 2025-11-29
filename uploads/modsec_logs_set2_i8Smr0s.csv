@@ -1,0 +1,9 @@
+timestamp,transaction_id,client_ip,http_status,request_method,request_uri,user_agent,rule_id,rule_message,matched_data,severity,attack_type,action,anomaly_score,phase
+2025-10-29T15:10:00Z,tx-1001,10.0.0.2,403,GET,/search?q=union+select+1,2,3,Chrome,2001,Strict SQL injection,"union select",high,Injection,blocked,12,2
+2025-10-29T15:10:07Z,tx-1002,10.0.0.3,403,GET,/products?q=select,Firefox,2002,General SQL keywords,"select",medium,Injection,detect,5,2
+2025-10-29T15:10:15Z,tx-1003,10.0.0.4,403,GET,/profile?bio=%3Cscript%3E,Edge,2003,Inline XSS,"<script>",high,XSS,blocked,10,2
+2025-10-29T15:10:22Z,tx-1004,10.0.0.5,403,GET,/../../etc/passwd,Safari,2005,Path traversal,"../etc/passwd",high,LFI,blocked,11,2
+2025-10-29T15:10:30Z,tx-1005,10.0.0.6,403,GET,/api?cmd=ls%20-la,Chrome,2006,Command injection,";",high,RCE,blocked,9,2
+2025-10-29T15:10:38Z,tx-1006,10.0.0.7,200,GET,/about,Chrome,,-,,-,low,Normal,passed,0,1
+2025-10-29T15:10:45Z,tx-1007,10.0.0.8,403,POST,/upload,burp,2007,Scanner agent,"burp",low,Scanner,detect,4,2
+2025-10-29T15:10:53Z,tx-1008,10.0.0.9,403,POST,/upload?file=webshell.php,Chrome,2008,Executable upload,".php",high,File Upload,blocked,10,2

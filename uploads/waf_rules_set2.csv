@@ -1,0 +1,9 @@
+rule_id,rule_name,rule_category,severity,pattern,action,description
+2001,sql_keywords_strict,injection,high,"(union\s+select|select\s+.*\s+from)",block,Strict SQL injection
+2002,sql_keywords_general,injection,medium,"(select|insert|update|delete)",detect,General SQL keywords
+2003,xss_inline_script,xss,high,"(<script|javascript:|onerror=|onload=)",block,Inline XSS detection
+2004,xss_angle_brackets,xss,medium,"(<|>|&lt;|&gt;)",detect,Generic XSS indicators
+2005,path_traversal_generic,lfi,high,"(\.\./|/etc/passwd|/windows/win.ini)",block,Generic path traversal
+2006,cmd_injection_basic,rce,high,"(;|\|\||`|\$\()",block,Basic command injection
+2007,scanner_agents,scanner,low,"(nmap|nikto|acunetix|w3af|burp)",detect,Scanner user agents
+2008,file_upload_exec,file_upload,high,"(\.php|\.jsp|\.exe|\.bat|\.cmd)",block,Executable file uploads

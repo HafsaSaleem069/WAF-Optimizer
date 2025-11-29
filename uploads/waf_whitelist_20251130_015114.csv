@@ -1,0 +1,7 @@
+rule_id,suggestion_type,pattern_description,pattern_regex,pattern_conditions,estimated_reduction,security_risk,priority,status,created_at
+1001,path_whitelist,"Allow path: /api/Products (1 occurrences, 100.0% reduction)",,"{'path': '/api/Products', 'occurrences': 1}",100.00%,high,low,suggested,2025-11-29 20:50:57
+1002,path_whitelist,"Allow path: /documentation/javascript (1 occurrences, 50.0% reduction)",,"{'path': '/documentation/javascript', 'occurrences': 1}",50.00%,high,medium,suggested,2025-11-29 20:50:57
+1002,path_whitelist,"Allow path: /api/Comments (1 occurrences, 50.0% reduction)",,"{'path': '/api/Comments', 'occurrences': 1}",50.00%,high,medium,suggested,2025-11-29 20:50:57
+1015,path_whitelist,"Allow path: /analytics/onclick (1 occurrences, 100.0% reduction)",,"{'path': '/analytics/onclick', 'occurrences': 1}",100.00%,high,medium,suggested,2025-11-29 20:50:57
+1002,path_whitelist,"Allow path: /documentation/javascript (1 occurrences, 50.0% reduction)",,"{'path': '/documentation/javascript', 'occurrences': 1}",50.00%,high,medium,suggested,2025-11-29 20:50:57
+1002,path_whitelist,"Allow path: /api/Comments (1 occurrences, 50.0% reduction)",,"{'path': '/api/Comments', 'occurrences': 1}",50.00%,high,medium,suggested,2025-11-29 20:50:57
