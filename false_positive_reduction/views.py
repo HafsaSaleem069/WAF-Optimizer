@@ -1,5 +1,4 @@
 # false_positive/views.py - CORRECTED VERSION
-
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -16,7 +15,6 @@ from .serializers import FalsePositiveDetectionSerializer, WhitelistSuggestionSe
 
 # -------------------------------
 # 1️⃣ Analyze False Positives (CORRECTED)
-# -------------------------------
 @api_view(['POST'])
 def analyze_false_positives(request):
     try:

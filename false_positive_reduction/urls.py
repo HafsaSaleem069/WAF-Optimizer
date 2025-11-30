@@ -13,7 +13,7 @@ router = DefaultRouter()
 # e.g., router.register(r'sessions', RuleAnalysisSessionViewSet, basename='session')
 
 urlpatterns = [
-    path('analyzefalsepostive/', analyze_false_positives, name='analyze_false_positives'),
+    path('analyzefalsepositive/', analyze_false_positives, name='analyze_false_positives'),
     path('export-whitelist/', export_whitelist_csv, name='export_whitelist_csv'),
     path('', include(router.urls)),
 ]

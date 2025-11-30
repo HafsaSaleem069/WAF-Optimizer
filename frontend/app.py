@@ -154,9 +154,6 @@ with tab_tuning:
     # Render Threshold Tuning Component
     render_threshold_tuning()
 
-# File deletion
-render_file_deletion()
-
 # -----------------------------
 # 7️⃣ Footer
 # -----------------------------

@@ -297,7 +297,7 @@ def render_file_selection(key_prefix: str = None):
             logs_files = get_traffic_files_from_supabase()
             st.session_state.available_rules_files = rules_files
             st.session_state.available_logs_files = logs_files
-            st.experimental_rerun()
+            st.rerun()
     with rcol2:
         st.write("")
     

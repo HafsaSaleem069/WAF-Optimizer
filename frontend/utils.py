@@ -14,11 +14,6 @@ RANKING_COMPARISON_URL = "http://127.0.0.1:8000/api/ranking/comparison/"
 HIT_COUNTS_UPDATE_URL = "http://127.0.0.1:8000/api/hit-counts/update/"
 HIT_COUNTS_DASHBOARD_URL = "http://127.0.0.1:8000/api/hit-counts/dashboard/"
 
-# FR04: False Positive Reduction API URLs
-FALSE_POSITIVE_ANALYZE_URL = "http://127.0.0.1:8000/api/analyzefalsepostive/"
-WHITELIST_EXPORT_URL = "http://127.0.0.1:8000/api/export-whitelist/"
-
-
 def check_backend_status():
     """Check if backend is online"""
     try:
@@ -244,6 +239,11 @@ def delete_file(filename, file_type):
 # ===========================
 # FR04: False Positive Detection Functions
 # ===========================
+
+# FR04: False Positive Reduction API URLs
+FALSE_POSITIVE_ANALYZE_URL = "http://127.0.0.1:8000/api/analyzefalsepositive/"
+WHITELIST_EXPORT_URL = "http://127.0.0.1:8000/api/export-whitelist/"
+
 
 def analyze_false_positives_file_mode(rules_file_id, logs_file_id):
     """
