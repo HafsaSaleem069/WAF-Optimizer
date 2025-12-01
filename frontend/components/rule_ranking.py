@@ -127,32 +127,32 @@ def render_performance_dashboard():
             flagged = metrics.get('flagged_rules_summary', {})
             st.metric("Optimization Opportunities", flagged.get('rarely_used', 0) + flagged.get('redundant', 0))
         
-        # Top performers
-        top_rules = dashboard_data.get('top_performing_rules', [])
-        if top_rules:
-            st.subheader("🏆 Top Performing Rules")
-            perf_df = pd.DataFrame(top_rules)
-            st.dataframe(perf_df, width='stretch')
+        # # Top performers
+        # top_rules = dashboard_data.get('top_performing_rules', [])
+        # if top_rules:
+        #     st.subheader("🏆 Top Performing Rules")
+        #     perf_df = pd.DataFrame(top_rules)
+        #     st.dataframe(perf_df, width='stretch')
         
         # All rules with metrics
-        all_rules = dashboard_data.get('all_rules', [])
-        if all_rules:
-            with st.expander("View All Rule Performance Data"):
-                rules_df = pd.DataFrame(all_rules)
-                # Format percentages for better display
-                if 'match_frequency' in rules_df.columns:
-                    rules_df['match_frequency'] = rules_df['match_frequency'].apply(
-                        lambda x: f"{float(x):.2%}" if x else "0%"
-                    )
-                if 'effectiveness_ratio' in rules_df.columns:
-                    rules_df['effectiveness_ratio'] = rules_df['effectiveness_ratio'].apply(
-                        lambda x: f"{float(x):.1%}" if x else "0%"
-                    )
-                st.dataframe(rules_df, width='stretch')
-    else:
-        st.error("Error loading dashboard")
+    #     all_rules = dashboard_data.get('all_rules', [])
+    #     if all_rules:
+    #         with st.expander("View All Rule Performance Data"):
+    #             rules_df = pd.DataFrame(all_rules)
+    #             # Format percentages for better display
+    #             if 'match_frequency' in rules_df.columns:
+    #                 rules_df['match_frequency'] = rules_df['match_frequency'].apply(
+    #                     lambda x: f"{float(x):.2%}" if x else "0%"
+    #                 )
+    #             if 'effectiveness_ratio' in rules_df.columns:
+    #                 rules_df['effectiveness_ratio'] = rules_df['effectiveness_ratio'].apply(
+    #                     lambda x: f"{float(x):.1%}" if x else "0%"
+    #                 )
+    #             st.dataframe(rules_df, width='stretch')
+    # else:
+    #     st.error("Error loading dashboard")
     
-    st.markdown('</div>', unsafe_allow_html=True)
+    # st.markdown('</div>', unsafe_allow_html=True)
 
 def render_rule_ranking():
     """Rule Ranking Section"""

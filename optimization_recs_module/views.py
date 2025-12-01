@@ -9,9 +9,12 @@ from django.http import StreamingHttpResponse
 import pandas as pd
 import io
 import json
+import re
+import uuid
 import traceback
 from .models import RuleAnalysisSession, RuleRelationship # Assuming these models exist
 from .rule_analyzer import RuleRelationshipAnalyzer # Import the local analyzer file
+from .file_storage_utils import save_file_content_by_name
 
 # NOTE: Mocking external utility imports based on context
 # from data_management.models import UploadedFile
@@ -30,13 +33,6 @@ class RuleAnalysisSessionViewSet(viewsets.ModelViewSet):
 
 
 # --- Function-Based Views (for API actions) ---
-
-def _flatten_relationships(relationships_dict):
-    """Convert relationships dictionary to flat list for API response"""
-    flattened = []
-    for rel_type, rel_list in relationships_dict.items():
-        flattened.extend(rel_list)
-    return flattened
 
 
 @api_view(['POST'])
@@ -168,3 +164,103 @@ def get_analysis_session(request, session_id):
         
     except Exception as e:
         return Response({'error': f'Failed to get session: {str(e)}'}, status=status.HTTP_404_NOT_FOUND)
+    
+@api_view(['POST'])
+def api_apply_optimization(request):
+    """
+    Receives an optimization instruction (MERGE, REMOVE_A, REMOVE_B),
+    the current rules content, and applies the change, returning the new CSV string.
+    
+    EXPECTED PAYLOAD (from frontend/utils.py):
+    {
+        "rules_file_name": "filename.csv", 
+        "rules_content": "Rule_ID,Pattern,...", 
+        "relationship_data": {...}, 
+        "action": "REMOVE_RULE_B"
+    }
+    """
+    try:
+        print("API Apply Optimization called with data.")
+        
+        # 1. Data Retrieval (Using filename and content from frontend)
+        rules_file_name = request.data.get('rules_file_name')
+        rules_csv_content = request.data.get('rules_content')
+        relationship_data = request.data.get('relationship_data')
+        action = request.data.get('action')
+        
+        if not all([rules_file_name, rules_csv_content, relationship_data, action]):
+            return Response({"status": "error", "message": "Missing required data (rules_file_name, rules_content, action, or relationship_data)"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 2. Parse and Prepare DataFrame (No file lookup needed)
+        rules_df = pd.read_csv(io.StringIO(rules_csv_content))
+        modified_df = rules_df.copy()
+
+        ai_suggestion = relationship_data.get('ai_suggestion', {})
+        
+        # NOTE: Rule IDs from the frontend are strings. Ensure comparison is safe.
+        rule_a_id = str(relationship_data.get('rule_a'))
+        rule_b_id = str(relationship_data.get('rule_b'))
+        optimized_rule_syntax = ai_suggestion.get('optimized_rule', '')
+        
+        # Filter column name for safety
+        ID_COL = 'rule_id'
+
+        # 3. Apply Modification Logic
+        
+        if action == 'REMOVE_RULE_A':
+            # Filter DataFrame where ID column value (converted to string) is not equal to rule_a_id
+            modified_df = modified_df[modified_df[ID_COL].astype(str) != rule_a_id]
+            message = f"Rule {rule_a_id} successfully removed."
+
+        elif action == 'REMOVE_RULE_B':
+            # Filter DataFrame where ID column value (converted to string) is not equal to rule_b_id
+            modified_df = modified_df[modified_df[ID_COL].astype(str) != rule_b_id]
+            message = f"Rule {rule_b_id} successfully removed."
+
+        elif action == 'MERGE':
+            if not optimized_rule_syntax or optimized_rule_syntax.strip() == '':
+                return Response({"status": "error", "message": "MERGE action requires optimized rule syntax."}, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Remove old rules (A and B) - Filter out rows where ID matches rule_a_id or rule_b_id
+            modified_df = modified_df[~modified_df[ID_COL].astype(str).isin([rule_a_id, rule_b_id])]
+            
+            # Use UUID if ID is not extractable (safer)
+            id_match = re.search(r'id:(\d+)', optimized_rule_syntax)
+            new_id = id_match.group(1) if id_match else f"MERGED-{str(uuid.uuid4())[:8]}" # Keep as string if UUID
+            
+            # Create the new merged rule row (using Rule A as the template for default values)
+            rule_a_row = rules_df[rules_df[ID_COL].astype(str) == rule_a_id].iloc[0]
+            new_rule_row = rule_a_row.copy()
+
+            new_rule_row[ID_COL] = new_id
+            new_rule_row['Pattern'] = optimized_rule_syntax
+            new_rule_row['Description'] = f"MERGED: {rule_a_id} & {rule_b_id} (AI Optimized)"
+            
+            # Append new rule
+            modified_df = pd.concat([modified_df, pd.DataFrame([new_rule_row])], ignore_index=True)
+            message = f"Rules {rule_a_id} and {rule_b_id} merged into new rule {new_id}."
+            
+        else:
+            return Response({"status": "error", "message": f"Unsupported action: {action}"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 4. Finalize and Save
+        new_csv_content = modified_df.to_csv(index=False)
+        # Use the name (unique key) for saving to Supabase
+        save_successful = save_file_content_by_name(rules_file_name, new_csv_content)
+
+        if not save_successful:
+            # If Supabase saving failed, return a server error
+            return Response({"status": "error", "message": "Failed to persist optimized file to storage."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        # 5. Response
+        return Response({
+            "status": "success", 
+            "message": message,
+            "new_csv_content": new_csv_content
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        # Catch all for unexpected errors
+        error_trace = traceback.format_exc()
+        print(f"Error: {error_trace}")
+        return Response({"status": "error", "message": f"Server error applying optimization: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -13,6 +13,7 @@ RANKING_API_URL = "http://127.0.0.1:8000/api/ranking/generate/"
 RANKING_COMPARISON_URL = "http://127.0.0.1:8000/api/ranking/comparison/"
 HIT_COUNTS_UPDATE_URL = "http://127.0.0.1:8000/api/hit-counts/update/"
 HIT_COUNTS_DASHBOARD_URL = "http://127.0.0.1:8000/api/hit-counts/dashboard/"
+OPTIMIZATION_APPLY_URL = "http://127.0.0.1:8000/api/optimize/apply/"
 
 def check_backend_status():
     """Check if backend is online"""
@@ -421,21 +422,116 @@ def validate_false_positive_session(session_id):
     except Exception as e:
         return False, str(e)
 
+# In frontend/utils.py
 
-# ===========================
-# Complete utils.py structure reference
-# ===========================
-"""
-Your complete utils.py should include:
+def update_session_with_new_csv(new_csv_content):
+    """
+    Placeholder/helper: Updates the active file content in session state.
+    (Assumes this function is defined elsewhere in utils.py)
+    """
+    # Assuming this function exists and works, or is where a potential error lies.
+    st.session_state['rules_file_content'] = new_csv_content
+    st.info("File content updated successfully in session state.")
 
-1. Base API URLs and configuration
-2. File management functions (upload_file, delete_file, get_files_data, etc.)
-3. Session management functions (create_analysis_session, etc.)
-4. Rule analysis functions (analyze_rules, analyze_rules_by_session, etc.)
-5. Ranking functions (generate_rule_ranking, get_ranking_comparison, etc.)
-6. Performance functions (update_performance_data, get_performance_dashboard, etc.)
-7. FALSE POSITIVE FUNCTIONS (the ones defined above)
 
-This code snippet contains ONLY the false positive related functions.
-Add them to your existing utils.py file without removing other functions.
-"""
+# In frontend/utils.py
+
+def apply_optimization_callback(button_key): 
+    """
+    Callback function executed when an 'Apply' button is clicked.
+    Uses rules_content and filename (unique key) instead of a numeric ID,
+    and ensures rules_content is correctly decoded to a string for JSON serialization.
+    """
+    try:
+        print(f"\n--- CALLBACK STARTED ---")
+        print(f"Key received: {button_key}")
+        
+        # 1. Retrieve essential data from session state
+        relationship_data = st.session_state.get(f'data_{button_key}')
+        
+        if not relationship_data:
+            error_msg = f"Error: Relationship data not found in session for key: {button_key}"
+            print(f"❌ DEBUG EXIT 1: {error_msg}")
+            st.session_state['status_message'] = error_msg
+            return
+
+        print(f"✅ Data retrieved successfully.")
+        st.session_state['status_message'] = "Applying optimization via backend..."
+        
+        ai_suggestion = relationship_data.get('ai_suggestion', {})
+        action = ai_suggestion.get('action')
+        
+        if not action:
+            error_msg = "Error: No 'action' defined in AI suggestion."
+            print(f"❌ DEBUG EXIT 2: {error_msg}")
+            st.session_state['status_message'] = error_msg
+            return
+        
+        # 2. Retrieve File Content & Name
+        rules_content = st.session_state.get('rules_file_content')
+        rules_file_name = st.session_state.get('selected_rules_file', {}).get('name')
+
+        # 🌟 CRITICAL FIX: Decode content if it is a bytes object
+        if isinstance(rules_content, bytes):
+            try:
+                # Decode bytes to string for JSON serialization
+                rules_content = rules_content.decode('utf-8')
+            except UnicodeDecodeError as e:
+                error_msg = f"Error decoding file content: {e}"
+                print(f"❌ DEBUG DECODE ERROR: {error_msg}")
+                st.session_state['status_message'] = f"❌ File Decode Error: {error_msg}"
+                return
+        
+        if not rules_content or not rules_file_name:
+            error_msg = "Error: Rules file content or unique filename (Supabase key) not found in session."
+            print(f"❌ DEBUG EXIT 3: {error_msg}")
+            st.session_state['status_message'] = error_msg
+            return
+
+        # 3. Prepare payload for the backend
+        payload = {
+            "rules_file_name": rules_file_name,
+            "rules_content": rules_content, # Now guaranteed to be a string
+            "relationship_data": relationship_data,
+            "action": action
+        }
+
+        print('✅ Payload prepared. Sending to backend...') 
+        
+        # 4. Send the instruction to the backend
+        # Ensure OPTIMIZATION_APPLY_URL is accessible in this scope
+        response = requests.post(
+            OPTIMIZATION_APPLY_URL, 
+            json=payload, 
+            timeout=60
+        )
+        
+        print(f"✅ Request sent. Status code received: {response.status_code}")
+        response.raise_for_status() # Raise HTTPError for bad responses (4xx or 5xx)
+        
+        result = response.json()
+        
+        if response.status_code == 200 and result.get('status') == 'success':
+            new_csv_content = result.get('new_csv_content')
+            
+            # 5. Process the backend response and update session state (Function assumed to exist)
+            update_session_with_new_csv(new_csv_content)
+            
+            st.session_state['status_message'] = f"Successfully applied '{action}' optimization. File ready for export."
+            print(f"✅ DEBUG SUCCESS: {st.session_state['status_message']}")
+            st.experimental_rerun()
+            
+        else:
+            error_msg = result.get('message', 'Unknown backend error.')
+            print(f"❌ DEBUG BACKEND FAIL: {error_msg}")
+            st.session_state['status_message'] = f"❌ Backend failed: {error_msg}"
+            
+    except requests.exceptions.RequestException as e:
+        full_error = f"API Request failed: {e}"
+        print(f"❌ DEBUG NETWORK ERROR: {full_error}")
+        st.session_state['status_message'] = f"❌ Network Error: Could not reach backend to apply changes. See console for details."
+        
+    except Exception as e:
+        full_error = f"Unexpected error in callback: {e}"
+        print(f"❌ DEBUG UNEXPECTED ERROR: {full_error}")
+        st.session_state['status_message'] = f"❌ Unexpected Callback Error: {full_error}"

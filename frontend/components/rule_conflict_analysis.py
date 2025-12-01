@@ -4,6 +4,7 @@ import plotly.express as px
 from utils import *
 import sys
 import os
+import datetime # Added datetime import for generating export filename
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from components.file_handling import render_file_selection
 
@@ -49,6 +50,7 @@ def render_rule_analysis():
             "Correlation": "COR"
         }
         
+        # --- Run Analysis Button Logic ---
         if st.button("Run Security Analysis", type="primary", width='stretch'):
             with st.spinner("Analyzing rule relationships..."):
                 # Convert full names to abbreviations before sending
@@ -62,8 +64,8 @@ def render_rule_analysis():
                 )
                 
                 if response and response.status_code == 200:
+                    st.session_state['analysis_results'] = response.json() # <-- CRITICAL: Store results
                     st.success("✅ Analysis completed!")
-                    display_analysis_results(response.json())
                 else:
                     st.error("❌ Analysis failed - check backend connection")
         else:
@@ -73,9 +75,19 @@ def render_rule_analysis():
     
     st.markdown('</div>', unsafe_allow_html=True)
 
+    # =======================================================
+    # --- Persistence Fix: Display results if they exist ---
+    # =======================================================
+    if 'analysis_results' in st.session_state:
+        display_analysis_results(st.session_state['analysis_results'])
+    # =======================================================
+
 
 def display_analysis_results(results):
-    """Display rule analysis results with enhanced design including AI suggestions"""
+    """
+    Display rule analysis results with enhanced design including AI suggestions 
+    and the final export button for the modified CSV.
+    """
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.header("📊 Analysis Results")
     
@@ -98,7 +110,6 @@ def display_analysis_results(results):
     display_enhanced_metrics(metrics_data)
     
     # --- CORRECTED AI CHECK AND ERROR DISPLAY ---
-    # The dedicated AI display section is now obsolete and must be removed.
     if data.get('ai_available') is False:
         st.warning("🤖 AI enhancement was not available for this analysis")
         if data.get('ai_error'):
@@ -118,7 +129,6 @@ def display_analysis_results(results):
                     st.markdown(f"**{get_relationship_name(rel_type)}**")
                     for rel in rel_list:
                         # --- CORRECT FUNCTION CALL ---
-                        # This function is responsible for the side-by-side display.
                         display_relationship_item_with_suggestion(rel)
                         # -----------------------------
     
@@ -138,6 +148,33 @@ def display_analysis_results(results):
             st.write(f"First {len(sample_rules)} rules: {', '.join(map(str, sample_rules))}")
     
     st.markdown('</div>', unsafe_allow_html=True)
+    
+    # =========================================================================
+    # --- NEW: DOWNLOAD BUTTON INTEGRATION (Export Modified CSV) ---
+    # This button now correctly appears and is populated with the content 
+    # updated by apply_optimization_callback via session state.
+    # =========================================================================
+    rules_content = st.session_state.get('rules_file_content')
+    original_name = st.session_state.get('selected_rules_file', {}).get('name', 'rules')
+
+    if rules_content:
+        # Create a dynamic filename
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        export_filename = f"optimized_{original_name.replace('.csv', '')}_{timestamp}.csv"
+        
+        st.markdown("---")
+        st.subheader("⬇️ Export Optimized Rules")
+        
+        st.download_button(
+            label="Download Optimized Rules CSV",
+            data=rules_content, 
+            file_name=export_filename,
+            mime="text/csv",
+            type="secondary",
+            help="Download the CSV file containing all rules, including applied AI optimizations."
+        )
+    # =========================================================================
+
 
 
 def display_relationship_item_with_suggestion(rel): 
@@ -156,15 +193,26 @@ def display_relationship_item_with_suggestion(rel):
     
     ai_suggestion = rel.get('ai_suggestion')
     
-    # Check if AI data exists to adjust the title tone
-    if ai_suggestion and ai_suggestion.get('action') not in ['AI_ERROR', 'NO_SUGGESTION', 'REVIEW_MANUALLY', 'KEEP_BOTH']:
-        action = ai_suggestion.get('action')
-        title = f"✅ {title} → **ACTION:** {action}"
-        is_actionable = True
-    else:
-        action = ai_suggestion.get('action') if ai_suggestion else 'REVIEW_MANUALLY'
-        is_actionable = action in ['MERGE', 'REMOVE_RULE_A', 'REMOVE_RULE_B', 'REORDER']
+    # Check if AI data exists to adjust the title tone and set actionability
+    action = ai_suggestion.get('action') if ai_suggestion else 'REVIEW_MANUALLY'
     
+    # Define which actions warrant an 'Apply' button
+    ACTIONABLE_ACTIONS = ['MERGE', 'REMOVE_RULE_A', 'REMOVE_RULE_B', 'REORDER', 'DISABLE', 'UPDATE'] 
+    is_actionable = action in ACTIONABLE_ACTIONS
+
+    if is_actionable:
+        title = f"✅ {title} → **ACTION:** {action}"
+    else:
+        # Use existing action or fallback for non-actionable suggestions
+        if action not in ['AI_ERROR', 'NO_SUGGESTION', 'REVIEW_MANUALLY', 'KEEP_BOTH']:
+             title = f"ℹ️ {title} → **ACTION:** {action}"
+        
+    # Generate a unique key for the button
+    button_key = f"apply_btn_{rule_a}_{rule_b}_{rel_type}" 
+    
+    # 📌 MODIFICATION 1: Store the relationship data in session state using the unique key
+    st.session_state[f'data_{button_key}'] = rel 
+
     with st.expander(title):
         
         col_detection, col_suggestion = st.columns(2)
@@ -176,12 +224,24 @@ def display_relationship_item_with_suggestion(rel):
             
         # --- RIGHT COLUMN: AI SUGGESTION DETAILS ---
         with col_suggestion:
+            st.markdown("#### 🤖 AI Optimization Suggestion")
             if ai_suggestion:
-                st.markdown("#### 🤖 AI Optimization Suggestion")
                 # Assume display_ai_suggestion_content handles the nested display
                 display_ai_suggestion_content(ai_suggestion)
+                
+                # Display the APPLY button if the action is actionable
+                if is_actionable:
+                    st.button(
+                        "✨ Apply Suggestion", 
+                        key=button_key, 
+                        on_click=apply_optimization_callback, 
+                        # 📌 MODIFICATION 2: Pass only the unique key in args
+                        args=(button_key,) 
+                    )
             else:
                 st.warning("No AI suggestion generated for this pair.")
+                st.info("Review the Rule Detection Details manually.")
+
 
 def display_ai_suggestion_content(suggestion):
     """Display details of an AI suggestion, designed to be nested inside a column."""

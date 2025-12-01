@@ -15,15 +15,12 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 # Some helper components are defined in the flat `components.py` file
-# (not inside the `components` package). Try to import `render_threshold_tuning`
-# from the package first, then fall back to loading the top-level `components.py`.
+# (This dynamic import block is kept for completeness)
 try:
-    # Try package-based import (preferred)
     from components.threshold_tuning import render_threshold_tuning
 except Exception:
     try:
-        # Fallback: dynamic load of the file `frontend/components.py`
-        import importlib.util, os, sys
+        import importlib.util
         comp_path = os.path.join(os.path.dirname(__file__), 'components.py')
         if os.path.exists(comp_path):
             spec = importlib.util.spec_from_file_location('flat_components', comp_path)
@@ -44,16 +41,10 @@ st.set_page_config(
 )
 
 # 2. Apply Custom Global Styles
-# This applies the dark theme, card styles, and typography defined in your styles.py
 apply_custom_styles()
 
-# 3. Render the Header
-# render_header()
-
 # 4. System Status Check
-# Blocks execution if the backend is not reachable
 if check_backend_status():
-    # Using a subtle toast or container for success to keep UI clean
     pass 
 else:
     st.error("🚨 Backend offline - Please run: `python manage.py runserver`")
@@ -66,93 +57,87 @@ if 'files_data' not in st.session_state:
     with st.spinner("Loading file library..."):
         st.session_state.files_data = get_files_data()
 
-# ==============================================================================
-# MAIN NAVIGATION (Horizontal Tabs)
-# ==============================================================================
-
-# Define the tabs structure
-# We group File operations together, and keep heavy analytical tools in their own tabs
-tab_files, tab_analysis, tab_perf, tab_ranking, tab_fp, tab_tuning = st.tabs([
+# 🌟 FIX: Initialize the active tab index and navigation options
+TAB_NAMES = [
     " File Management", 
     " Rule Analysis", 
     " Performance", 
     " Rule Ranking", 
     " False Positive Reduction", 
-    " Threshold Tuning"
-])
+]
 
-# --- TAB 1: FILE MANAGEMENT ---
-with tab_files:
+if 'active_tab_name' not in st.session_state:
+    st.session_state.active_tab_name = TAB_NAMES[0] # Default to the first tab
+
+# ==============================================================================
+# MAIN NAVIGATION (st.radio replacement for stable persistence)
+# ==============================================================================
+
+# Use st.radio, which is inherently stateful, to replace st.tabs.
+selected_tab = st.radio(
+    "Navigation", 
+    options=TAB_NAMES, 
+    index=TAB_NAMES.index(st.session_state.active_tab_name),
+    key='main_navigation_radio',
+    horizontal=True,
+    label_visibility='collapsed'
+)
+
+# Update session state immediately (this ensures the selected tab persists 
+# even across non-widget-driven reruns)
+st.session_state.active_tab_name = selected_tab
+
+# ==============================================================================
+# CONDITIONAL RENDERING BASED ON SELECTED TAB
+# ==============================================================================
+
+if selected_tab == " File Management":
+    # --- TAB 1: FILE MANAGEMENT ---
     st.markdown("### 📂 Workspace & File Management")
     st.markdown("Manage your WAF logs, configuration files, and datasets here.")
     
     col1, col2 = st.columns([2, 1])
     
     with col1:
-        # File Library: Shows currently available files
         render_file_library()
-        
-        # File Selection: Select active files for analysis
         st.markdown("---")
         render_file_selection()
         
     with col2:
-        # File Management: Upload new files
         render_file_management()
-        
-        # File Deletion: Remove old files
-        # Moved here from the bottom of the page for better logical grouping
         st.markdown("---")
         render_file_deletion()
 
-# --- TAB 2: RULE ANALYSIS ---
-with tab_analysis:
-    st.markdown("###  Deep Rule Analysis")
+elif selected_tab == " Rule Analysis":
+    # --- TAB 2: RULE ANALYSIS ---
+    st.markdown("###  Deep Rule Analysis")
     st.markdown("Analyze rule conflicts and overlaps within your selected configuration.")
-    
-    # Render Rule Analysis Component
     render_rule_analysis()
 
-# --- TAB 3: PERFORMANCE ---
-with tab_perf:
-    st.markdown("###  Performance Profiling")
+elif selected_tab == " Performance":
+    # --- TAB 3: PERFORMANCE ---
+    st.markdown("###  Performance Profiling")
     st.markdown("Monitor the latency impact and execution time of your WAF rules.")
     
-    # Performance Profiling: Setup and run tests
     render_performance_profiling()
-    
     st.markdown("---")
-    
-    # Performance Dashboard: Visual results
     render_performance_dashboard()
 
-# --- TAB 4: RULE RANKING ---
-with tab_ranking:
-    st.markdown("###  Rule Effectiveness Ranking")
+elif selected_tab == " Rule Ranking":
+    # --- TAB 4: RULE RANKING ---
+    st.markdown("###  Rule Effectiveness Ranking")
     st.markdown("Rank rules based on hit rate, severity, and performance cost.")
     
-    # Render Ranking Controls
     render_rule_ranking()
     
-    # Conditional Rendering: Ranking Visualization
-    # Only shows if a ranking session has been generated
     if hasattr(st.session_state, 'current_ranking_session'):
         st.markdown("---")
         st.markdown("#### Ranking Visualization")
         show_ranking_visualization(st.session_state.current_ranking_session)
 
-# --- TAB 5: FALSE POSITIVE REDUCTION ---
-with tab_fp:
-    # Render FR04 False Positive Reduction Component
+elif selected_tab == " False Positive Reduction":
+    # --- TAB 5: FALSE POSITIVE REDUCTION ---
     render_false_positive_management()
-
-# --- TAB 6: THRESHOLD TUNING ---
-with tab_tuning:
-    st.markdown("### Anomaly Threshold Tuning")
-    st.markdown("Fine-tune sensitivity thresholds for anomaly detection rules.")
-    
-    # Render Threshold Tuning Component
-    render_threshold_tuning()
 
 # -----------------------------
 # 7️⃣ Footer
@@ -171,7 +156,7 @@ st.markdown("""
             <span style="color: #7c3aed;">Intelligence</span>
         </div>
         <div style="color: #737373; font-size: 12px; margin-top: 8px;">
-            Intelligent Web Application Firewall Optimization Platform
+             Intelligent Web Application Firewall Optimization Platform
         </div>
     </div>
 </div>
